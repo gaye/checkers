@@ -1,0 +1,12 @@
+{
+  "name": "checkers",
+  "version": "0.0.1",
+  "description": "Browser checkers game",
+  "author": "Gareth Aye <gareth.aye@gmail.com>",
+  "repository": "https://github.com/gaye/checkers.git",
+  "devDependencies": {
+    "chai": "1.8.1",
+    "mocha": "1.16.2",
+    "sinon": "1.7.3"
+  }
+}
