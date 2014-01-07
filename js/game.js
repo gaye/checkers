@@ -116,7 +116,7 @@ define('game', ['move', 'piece'], function(Move, Piece) {
       });
 
       return moves;
-    },
+    }
   };
 
   function generateBoard() {

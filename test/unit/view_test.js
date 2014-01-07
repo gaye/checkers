@@ -41,34 +41,6 @@ suite('View', function() {
     });
   });
 
-  suite('#onClick', function() {
-    var dispatchEvent;
-
-    setup(function() {
-      dispatchEvent = sinon
-        .mock(window)
-        .expects('dispatchEvent');
-
-      var event = new MouseEvent('click', {
-        view: window,
-        bubbles: true,
-        cancelable: true
-      });
-
-      event.pageX = 500;
-      event.pageY = 500;
-      subject.canvas.dispatchEvent(event);
-    });
-
-    teardown(function() {
-      window.dispatchEvent.restore();
-    });
-
-    test('should dispatch "space" event on window', function() {
-      dispatchEvent.verify();
-    });
-  });
-
   test.skip('#render', function() {
   });
 });
