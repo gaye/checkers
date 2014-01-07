@@ -1,13 +1,15 @@
 suite('Controller', function() {
-  var Controller, Game, subject, game;
+  var Controller, Game, Piece, subject, game;
 
   setup(function(done) {
     require([
       'controller',
-      'game'
-    ], function(_Controller, _Game) {
+      'game',
+      'piece'
+    ], function(_Controller, _Game, _Piece) {
       Controller = _Controller;
       Game = _Game;
+      Piece = _Piece;
       subject = new Controller();
       game = new Game();
       subject.game = game;
@@ -83,13 +85,17 @@ suite('Controller', function() {
       assert.notEqual(game.board[4][2], null);
     });
 
-    test.skip('should jump and remove opponent', function() {
-    });
+    test('should jump and remove opponent', function() {
+      var piece = new Piece();
+      piece.player = -1;
+      piece.row = 4;
+      piece.col = 2;
+      game.board[4][2] = piece;
 
-    test.skip('should double jump and remove opponents', function() {
-    });
-
-    test.skip('should triple jump and remove opponents', function() {
+      subject.select(game.board[5][1]);
+      subject.move(3, 3);
+      assert.equal(game.board[4][2], null);
+      assert.notEqual(game.board[3][3], null);
     });
   });
 
