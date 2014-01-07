@@ -9,6 +9,7 @@ define('view', function() {
   View.BLUE = 'rgb(0, 0, 255)';
   View.RED = 'rgb(255, 0, 0)';
   View.PURPLE = 'rgb(255, 0, 255)';
+  View.BROWN = 'rgb(255, 255, 0)';
 
   View.prototype = {
     game: null,
@@ -61,6 +62,15 @@ define('view', function() {
           context.arc(x, y, r, start, end);
           context.closePath();
           context.fill();
+
+          if (piece.king) {
+            r = 0.5 * square / 2;
+            context.fillStyle = View.BROWN;
+            context.beginPath();
+            context.arc(x, y, r, start, end);
+            context.closePath();
+            context.fill();
+          }
         }.bind(this));
       }.bind(this));
 

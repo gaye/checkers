@@ -41,6 +41,14 @@ define('controller', function() {
         board[move.row][move.col] = selected;
         selected.row = move.row;
         selected.col = move.col;
+        if (selected.row === 0 || selected.row === 7) {
+          selected.king = true;
+        }
+
+        move.captures.forEach(function(capture) {
+          board[capture.row][capture.col] = null;
+        });
+
         game.alternateTurn();
         return this.view.render();
       }.bind(this));
