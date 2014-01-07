@@ -1,6 +1,6 @@
-define('game', function() {
+define('game', ['move', 'piece'], function(Move, Piece) {
   function Game() {
-    this.initBoard();
+    this.board = generateBoard();
     this.player = 1;
     this.selected = null;
     this.moves = [];
@@ -12,30 +12,6 @@ define('game', function() {
     selected: null,
     moves: null,
 
-    initBoard: function() {
-      this.board = [];
-      for (var i = 0; i < 8; i++) {
-        var row = [];
-        for (var j = 0; j < 8; j++) {
-          var piece;
-          if ((i < 3 || i > 4) /* Not in the middle */ &&
-              (i % 2 === j % 2) /* Black square */) {
-            piece = new Piece();
-            piece.player = i > 4 ? 1 : -1;
-            piece.king = false;
-            piece.row = i;
-            piece.col = j;
-          } else {
-            piece = null;
-          }
-
-          row.push(piece);
-        }
-
-        this.board.push(row);
-      }
-    },
-
     alternateTurn: function() {
       this.select(null);
       this.player = this.player === 1 ? -1 : 1;
@@ -43,128 +19,128 @@ define('game', function() {
 
     select: function(piece) {
       this.selected = piece;
-      this.moves = piece ? this.computeMoves(piece) : [];
+      this.moves = piece ? this.expandMoves(piece) : [];
     },
 
-    computeMoves: function(piece) {
-      var moveset = [];
-      var board = this.board;
+    expandMoves: function(piece) {
+      var moves = [];
 
-      var directions = piece.king ? ['ul', 'ur', 'dl', 'dr'] : ['ul', 'ur'];
-      var stack = [];
-      stack.push({
-        row: piece.row,
-        col: piece.col,
-        mustJump: false,
-        captures: []
-      });
+      var move = new Move();
+      move.row = piece.row;
+      move.col = piece.col;
+      move.jump = false;
+      move.captures = [];
+
+      var stack = [move];
       while (stack.length !== 0) {
         var next = stack.pop();
-        var row = next.row;
-        var col = next.col;
-
-        for (var i = 0; i < directions.length; i++) {
-          var direction = directions[i];
-          var slideRow, slideCol;
-          var jumpRow, jumpCol;
-          switch (direction) {
-            case 'ul':
-              slideRow = row - this.player;
-              slideCol = col - this.player;
-              jumpRow = slideRow - this.player;
-              jumpCol = slideCol - this.player;
-              break;
-            case 'ur':
-              slideRow = row - this.player;
-              slideCol = col + this.player;
-              jumpRow = slideRow - this.player;
-              jumpCol = slideCol + this.player;
-              break;
-            case 'dl':
-              slideRow = row + this.player;
-              slideCol = col - this.player;
-              jumpRow = slideRow + this.player;
-              jumpCol = slideCol - this.player;
-              break;
-            case 'dr':
-              slideRow = row + this.player;
-              slideCol = col + this.player;
-              jumpRow = slideRow + this.player;
-              jumpCol = slideCol + this.player;
-              break;
+        var expand = this.expand(next, this.board, piece.player, piece.king);
+        expand.forEach(function(found) {
+          moves.push(found);
+          if (found.jump) {
+            stack.push(found);
           }
-
-          var move;
-          if (!next.mustJump) {
-            if (slideRow < 0 || slideRow >= 8 ||
-                slideCol < 0 || slideCol >= 8) {
-              continue;
-            }
-
-            // Open space?
-            if (!board[slideRow][slideCol]) {
-              move = {
-                row: slideRow,
-                col: slideCol,
-                mustJump: false,
-                captures: []
-              };
-              moveset.push(move);
-              continue;
-            }
-          }
-
-          if (jumpRow < 0 || jumpRow >= 8 ||
-              jumpCol < 0 || jumpCol >= 8) {
-            continue;
-          }
-
-          // Jump?
-          if (board[slideRow][slideCol] &&
-              board[slideRow][slideCol].player !== this.player &&
-              !board[jumpRow][jumpCol]) {
-            if (next.previous &&
-                next.previous.row === jumpRow &&
-                next.previous.col === jumpCol) {
-              continue;
-            }
-
-            var captures = next.captures || [];
-            captures.push({ row: slideRow, col: slideCol });
-            move = {
-              row: jumpRow,
-              col: jumpCol,
-              mustJump: true,
-              captures: captures,
-              previous: {
-                row: row,
-                col: col
-              }
-            };
-
-            moveset.push(move);
-            stack.push(move);
-          }
-        }
+        });
       }
 
-      return moveset;
+      return moves;
+    },
+
+    expand: function(move, board, player, king) {
+      var row = move.row,
+          col = move.col;
+
+      var directions = ['ul', 'ur'];
+      if (king) {
+        directions = directions.concat(['dl', 'dr']);
+      }
+
+      var moves = [];
+      directions.forEach(function(direction) {
+        var slideMove = new Move();
+        slideMove.jump = false;
+        slideMove.captures = [];
+        var jumpMove = new Move();
+        jumpMove.jump = true;
+        jumpMove.captures = move.captures;
+
+        switch (direction) {
+          case 'ul':
+            slideMove.row = row - player;
+            slideMove.col = col - player;
+            jumpMove.row = slideMove.row - player;
+            jumpMove.col = slideMove.col - player;
+            break;
+          case 'ur':
+            slideMove.row = row - player;
+            slideMove.col = col + player;
+            jumpMove.row = slideMove.row - player;
+            jumpMove.col = slideMove.col + player;
+            break;
+          case 'dl':
+            slideMove.row = row + player;
+            slideMove.col = col - player;
+            jumpMove.row = slideMove.row + player;
+            jumpMove.col = slideMove.col - player;
+            break;
+          case 'dr':
+            slideMove.row = row + player;
+            slideMove.col = col + player;
+            jumpMove.row = slideMove.row + player;
+            jumpMove.col = slideMove.col + player;
+            break;
+        }
+
+        if (!move.jump &&
+            slideMove.inbounds() &&
+            !board[slideMove.row][slideMove.col]) {
+          // We can still slide.
+          return moves.push(slideMove);
+        }
+
+        if (jumpMove.inbounds()) {
+          var capture = board[slideMove.row][slideMove.col];
+          if (capture && capture.player !== player &&
+              !board[jumpMove.row][jumpMove.col]) {
+            if (move.previous &&
+                move.previous.row === jumpMove.row &&
+                move.previous.col === jumpMove.col) {
+              return;
+            }
+
+            jumpMove.captures.push({ row: capture.row, col: capture.col });
+            jumpMove.previous = { row: move.row, col: move.col };
+            return moves.push(jumpMove);
+          }
+        }
+      });
+
+      return moves;
+    },
+  };
+
+  function generateBoard() {
+    var board = [];
+    for (var i = 0; i < 8; i++) {
+      var row = [];
+      for (var j = 0; j < 8; j++) {
+        var piece = null;
+        if ((i < 3 || i > 4) && (i % 2 === j % 2)) {
+          piece = new Piece();
+          piece.player = i > 4 ? 1 : -1;
+          piece.king = false;
+          piece.row = i;
+          piece.col = j;
+        }
+
+        row.push(piece);
+      }
+
+      board.push(row);
     }
-  };
 
-  function Piece() {
-  };
-
-  Piece.prototype = {
-    player: null,
-    king: null,
-    row: null,
-    col: null,
-
-    equals: function(other) {
-      return this.row === other.row && this.col === other.col;
-    }
-  };
+    return board;
+  }
 
   return Game;
 });
