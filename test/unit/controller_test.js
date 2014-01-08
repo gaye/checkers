@@ -12,6 +12,7 @@ suite('Controller', function() {
       Piece = _Piece;
       subject = new Controller();
       game = new Game();
+      game.init();
       subject.game = game;
       subject.view = { render: function() {} };
       done();

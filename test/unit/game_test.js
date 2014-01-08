@@ -6,6 +6,7 @@ suite('Game', function() {
       Game = _Game;
       Piece = _Piece;
       subject = new Game();
+      subject.init();
       done();
     });
   });

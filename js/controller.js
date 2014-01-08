@@ -1,13 +1,18 @@
-define('controller', function() {
+define('controller', ['move', 'piece'], function(Move, Piece) {
   function Controller() {
     this.onSpace = this.onSpace.bind(this);
+    this.onMessage = this.onMessage.bind(this);
+
     window.addEventListener('space', this.onSpace);
+    this.worker = new Worker('js/worker.js');
+    this.worker.onmessage = this.onMessage;
   }
 
   Controller.prototype = {
     game: null,
-
     view: null,
+    search: null,
+    worker: null,
 
     onSpace: function(event) {
       var board = this.game.board;
@@ -24,38 +29,36 @@ define('controller', function() {
 
     move: function(row, col) {
       var game = this.game;
-      var selected = game.selected;
-      if (!selected) {
+      if (!game.selected) {
         return;
       }
 
       // Check to see if the move is available.
-      var board = game.board;
       var moves = game.moves;
-      moves.forEach(function(move) {
+      for (var i = 0; i < moves.length; i++) {
+        var move = moves[i];
         if (move.row !== row || move.col !== col) {
-          return;
+          continue;
         }
 
-        board[selected.row][selected.col] = null;
-        board[move.row][move.col] = selected;
-        selected.row = move.row;
-        selected.col = move.col;
-        if (selected.row === 0 || selected.row === 7) {
-          selected.king = true;
-        }
+        game.move(move);
+        break;
+      }
 
-        move.captures.forEach(function(capture) {
-          board[capture.row][capture.col] = null;
-        });
+      this.view.render();
 
-        game.alternateTurn();
-        return this.view.render();
-      }.bind(this));
+      if (game.player === -1) {
+        setTimeout(this.computerMove.bind(this), 0);
+      }
     },
 
     select: function(piece) {
+      this._select(piece.row, piece.col);
+    },
+
+    _select: function(row, col) {
       var game = this.game;
+      var piece = game.board[row][col];
       if (piece.player !== game.player) {
         return;
       }
@@ -64,10 +67,43 @@ define('controller', function() {
       if (selected && selected.equals(piece)) {
         game.select(null);
       } else {
-        game.select(piece);
+        game.select(row, col);
       }
 
       return this.view.render();
+    },
+
+    computerMove: function() {
+      this.worker.postMessage(this.game);
+    },
+
+    onMessage: function(event) {
+      var msg = event.data;
+      switch (msg.type) {
+        case 'debug':
+          console.log(msg.msg);
+          break;
+        case 'move':
+          var move = new Move({
+            captures: msg.move.captures,
+            col: msg.move.col,
+            jump: msg.move.jump,
+            row: msg.move.row,
+            start: new Piece({
+              player: msg.move.start.player,
+              king: msg.move.start.king,
+              row: msg.move.start.row,
+              col: msg.move.start.col,
+              dead: false
+            })
+          });
+
+          console.log(JSON.stringify(move));
+
+          this.select(move.start);
+          setTimeout(this.move.bind(this, move.row, move.col), 1000);
+          break;
+      }
     }
   };
 

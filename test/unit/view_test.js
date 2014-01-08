@@ -16,6 +16,7 @@ suite('View', function() {
       Game = _Game;
       subject = new View();
       game = new Game();
+      game.init();
       subject.game = game;
       done();
     });
