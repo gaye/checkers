@@ -14,6 +14,17 @@ define('node', function() {
     move: null,
     value: null,
 
+    size: function() {
+      var result = 0;
+      if (this.children) {
+        this.children.forEach(function(child) {
+          result += child.size();
+        });
+      }
+
+      return 1 + result;
+    },
+
     toString: function() {
       var result = {};
       var queue = [];

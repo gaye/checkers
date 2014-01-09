@@ -48,6 +48,7 @@ define('controller', ['move', 'piece'], function(Move, Piece) {
       this.view.render();
 
       if (game.player === -1) {
+        console.log('Issue computer move...');
         setTimeout(this.computerMove.bind(this), 0);
       }
     },
@@ -74,6 +75,7 @@ define('controller', ['move', 'piece'], function(Move, Piece) {
     },
 
     computerMove: function() {
+      console.log('postMessage to worker...');
       this.worker.postMessage(this.game);
     },
 
@@ -98,7 +100,7 @@ define('controller', ['move', 'piece'], function(Move, Piece) {
             })
           });
 
-          console.log(JSON.stringify(move));
+          console.log('Received worker move ' + JSON.stringify(move));
 
           this.select(move.start);
           setTimeout(this.move.bind(this, move.row, move.col), 1000);

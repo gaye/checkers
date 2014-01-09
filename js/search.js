@@ -4,9 +4,10 @@ define('search', ['game', 'node', 'clone'], function(Game, Node, clone) {
 
   Search.prototype = {
     search: function(game) {
+      console.log('Do search...');
       var tree = buildTree(game);
+      console.log('Searching tree with ' + tree.size() + ' nodes...');
       var move = minimax(tree);
-      console.log(tree.toString());
       return move;
     }
   };
@@ -21,7 +22,7 @@ define('search', ['game', 'node', 'clone'], function(Game, Node, clone) {
     var stack = [node];
     while (stack.length > 0) {
       var next = stack.pop();
-      if (next.depth > 4) {
+      if (next.depth > 3) {
         continue;
       }
 

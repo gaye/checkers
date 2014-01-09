@@ -11,6 +11,7 @@ importScripts('require.js');
 require(['game', 'search', 'clone'], function(Game, Search, clone) {
   var search = new Search();
   self.addEventListener('message', function(event) {
+    console.log('Worker received message...');
     var game = new Game();
     game.board = clone(event.data.board);
     game._playerToPieces = event.data._playerToPieces;
@@ -25,6 +26,7 @@ require(['game', 'search', 'clone'], function(Game, Search, clone) {
       col: move.start.col
     };
 
+    console.log('Worker will send message...');
     self.postMessage({ type: 'move', move: move });
   });
 });

@@ -1,6 +1,8 @@
 .container {
   border: 1px solid black;
-  height: 560px;
-  margin: 0 auto;
-  width: 560px;
+  height: 320px;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 312px;
 }
