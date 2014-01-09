@@ -1,0 +1,14 @@
+{
+  "version": "0.0.1",
+  "name": "Checkers",
+  "description": "A classic game of fun and wonder!",
+  "launch_path": "index.html",
+  "icons": {
+    "60": "/style/icons/icon-60.png"
+  },
+  "developer": {
+    "name": "Gareth Aye",
+    "url": "http://gaye.github.io/checkers"
+  },
+  "default_locale": "en"
+}

@@ -18,12 +18,9 @@ define('search', ['game', 'node', 'clone'], function(Game, Node, clone) {
       game: game
     });
 
-    var size = 0;
-    var start = new Date().getTime();
     var stack = [node];
     while (stack.length > 0) {
       var next = stack.pop();
-      size++;
       if (next.depth > 4) {
         continue;
       }
@@ -52,10 +49,6 @@ define('search', ['game', 'node', 'clone'], function(Game, Node, clone) {
       stack = stack.concat(children);
       next.children = children;
     }
-
-    var finish = new Date().getTime();
-    console.log('boards searched: ' + size);
-    console.log('per second: ' + size / ((finish - start) / 1000));
 
     return node;
   }
