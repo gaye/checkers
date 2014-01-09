@@ -12,5 +12,5 @@
     "url": "http://gaye.github.io/checkers"
   },
   "default_locale": "en",
-  "orientation": "default"
+  "orientation": ["portrait"]
 }
